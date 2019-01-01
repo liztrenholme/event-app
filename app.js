@@ -24,8 +24,11 @@ app.use('/graphql', graphqlhttp({
 
         type User {
             _id: ID!
+            firstName: String!
+            lastName: String!
             email: String!
             password: String
+            phone: Int!
         }
 
         input EventInput {
@@ -36,8 +39,11 @@ app.use('/graphql', graphqlhttp({
         }
 
         input UserInput {
+            firstName: String!
+            lastName: String!
             email: String!
             password: String!
+            phone: Int!
 
         }
         
@@ -55,6 +61,7 @@ app.use('/graphql', graphqlhttp({
             mutation: RootMutation
         }`
     ),
+    // resolver functions
     rootValue: {
         events: () => {
             // can pass filter in future w/reg mongo query language
@@ -86,13 +93,16 @@ app.use('/graphql', graphqlhttp({
             return bcrypt.hash(args.userInput.password, 12)
             .then(hashedPassword => {
                 const user = new User({
+                    firstName: args.userInput.firstName,
+                    lastName: args.userInput.lastName,
                     email: args.userInput.email,
-                    password: hashedPassword
+                    password: hashedPassword,
+                    phone: args.userInput.phone
                 });
                 return user.save();
             })
             .then(result => {
-                return { ...result._doc, _id: result.id };
+                return { ...result._doc, password: null, _id: result.id };
             })
             .catch(err => {
                 throw err;
